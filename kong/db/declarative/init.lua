@@ -745,7 +745,7 @@ function declarative.load_into_cache(entities, meta, hash, shadow)
     return nil, err
   end
 
-  local ok, err = ngx.shared.kong:safe_set(DECLARATIVE_HASH_KEY, hash or true)
+  local ok, err = ngx.shared.kong:safe_set("declarative_config:hash", hash or true)
   if not ok then
     return nil, "failed to set " .. DECLARATIVE_HASH_KEY .. " in shm: " .. err
   end
@@ -819,7 +819,7 @@ do
     ok, err, default_ws = declarative.load_into_cache(entities, meta, hash, SHADOW)
     if ok then
       ok, err = kong.worker_events.post("declarative", "flip_config", default_ws)
-      if ok ~= "done" then
+      if not ok then
         ngx.shared.kong:delete(DECLARATIVE_FLIPS_NAME)
         return nil, "failed to flip declarative config cache pages: " .. (err or ok)
       end
