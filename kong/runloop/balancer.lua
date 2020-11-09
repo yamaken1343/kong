@@ -26,7 +26,6 @@ local tostring = tostring
 local tonumber = tonumber
 local assert = assert
 local table = table
-local timer_at = ngx.timer.at
 local run_hook = hooks.run_hook
 
 
@@ -824,13 +823,6 @@ local function update_balancer_state(premature)
       end
     end
   end)
-
-  local frequency = kong.configuration.worker_state_update_frequency or 1
-  local _, err = timer_at(frequency, update_balancer_state)
-  if err then
-    log(CRIT, "unable to reschedule update proxy state timer: ", err)
-  end
-
 end
 
 
@@ -866,7 +858,7 @@ local function init()
 
   if kong.configuration.worker_consistency == "eventual" then
     local frequency = kong.configuration.worker_state_update_frequency or 1
-    local _, err = timer_at(frequency, update_balancer_state)
+    local _, err = kong.async:every(frequency, update_balancer_state)
     if err then
       log(CRIT, "unable to start update proxy state timer: ", err)
     else
