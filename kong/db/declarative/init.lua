@@ -821,7 +821,7 @@ do
       ok, err = kong.worker_events.post("declarative", "flip_config", default_ws)
       if not ok then
         ngx.shared.kong:delete(DECLARATIVE_FLIPS_NAME)
-        return nil, "failed to flip declarative config cache pages: " .. (err or ok)
+        return nil, "failed to flip declarative config cache pages: " .. (err or "unknown error")
       end
 
     else
