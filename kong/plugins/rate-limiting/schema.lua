@@ -23,6 +23,52 @@ local function validate_periods_order(config)
 end
 
 
+local function is_dbless()
+  local ok, database = pcall(function()
+    return kong.configuration.database
+  end)
+
+  if not ok then
+    return nil
+  end
+
+  local ok, role = pcall(function()
+    return kong.configuration.role
+  end)
+
+  if not ok then
+    return nil
+  end
+
+  return database == "off" or role == "control_plane" or role == "data_plane" or nil
+end
+
+local policy
+if is_dbless() then
+  policy = {
+    type = "string",
+    default = "local",
+    len_min = 0,
+    one_of = {
+      "local",
+      "redis",
+    },
+  }
+
+else
+  policy = {
+    type = "string",
+    default = "cluster",
+    len_min = 0,
+    one_of = {
+      "local",
+      "cluster",
+      "redis",
+    },
+  }
+end
+
+
 return {
   name = "rate-limiting",
   fields = {
@@ -43,12 +89,7 @@ return {
           }, },
           { header_name = typedefs.header_name },
           { path = typedefs.path },
-          { policy = {
-              type = "string",
-              default = "cluster",
-              len_min = 0,
-              one_of = { "local", "cluster", "redis" },
-          }, },
+          { policy = policy },
           { fault_tolerant = { type = "boolean", required = true, default = true }, },
           { redis_host = typedefs.host },
           { redis_port = typedefs.port({ default = 6379 }), },
