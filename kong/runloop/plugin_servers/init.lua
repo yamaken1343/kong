@@ -20,6 +20,7 @@ local rpc_notifications = {}
 --- currently running plugin instances
 local running_instances = {}
 
+--local pp = require "pl.pretty".write
 
 
 --[[
@@ -55,8 +56,10 @@ end
 --- instance.  Biggest complexity here is due to the remote (and thus non-atomic
 --- and fallible) operation of starting the instance at the server.
 local function get_instance_id(plugin_name, conf)
+  --kong.log.debug("get_instance_id: ", plugin_name, " / ", pp(conf))
   local key = type(conf) == "table" and conf.__key__ or plugin_name
   local instance_info = running_instances[key]
+  --kong.log.debug("cached info: ", instance_info, ":", instance_info and instance_info.id)
 
   while instance_info and not instance_info.id do
     -- some other thread is already starting an instance
@@ -89,11 +92,12 @@ local function get_instance_id(plugin_name, conf)
   local plugin_info = get_plugin_info(plugin_name)
   local server_rpc  = get_server_rpc(plugin_info.server_def)
 
-  kong.log.debug("will call , cmd_start_instance: ", plugin_name, ", ", cjson_encode(conf))
+  --kong.log.debug("will call , cmd_start_instance: ", plugin_name, ", ", cjson_encode(conf))
   local status, err = server_rpc:call("cmd_start_instance", {
     name = plugin_name,
     config = cjson_encode(conf)
   })
+
   if status == nil then
     kong.log.err("starting instance: ", err)
     -- remove claim, some other thread might succeed
@@ -101,11 +105,15 @@ local function get_instance_id(plugin_name, conf)
     error(err)
   end
 
-  instance_info.id = status.Id
+  --kong.log.debug("got status: ", pp(status))
+
+  instance_info.id = status.instance_status.instance_id
   instance_info.conf = conf
   instance_info.seq = conf.__seq__
-  instance_info.Config = status.Config
+  instance_info.Config = status.instance_status.config
   instance_info.rpc = server_rpc
+
+  --kong.log.debug("saving instance_info: ", pp(instance_info))
 
   if old_instance_id then
     -- there was a previous instance with same key, close it
@@ -294,7 +302,7 @@ local function bridge_loop(instance_rpc, instance_id, phase)
     kong.log.err("no instance_rpc: ", debug.traceback())
   end
   local step_in, err = instance_rpc:call("cmd_handle_event", {
-    instance_idd = instance_id,
+    instance_id = instance_id,
     event_name = phase,
   }, true)
   if not step_in then
@@ -326,8 +334,13 @@ end
 
 
 local function handle_event(instance_rpc, plugin_name, conf, phase)
+  --kong.log.debug(("handle_event, plugin: %q, event %q"):format(plugin_name, phase))
   local instance_id = get_instance_id(plugin_name, conf)
+  --kong.log.debug("got instance # ", instance_id)
   local _, err = bridge_loop(instance_rpc, instance_id, phase)
+
+  --kong.log.debug(string.format("from bridge_loop: (%s)%q / (%s)%q",
+  --  type(_), tostring(_), type(err), tostring(err)))
 
   if err then
     kong.log.err(err)
@@ -370,6 +383,7 @@ local function build_phases(plugin)
     else
       plugin[phase] = function(self, conf)
         handle_event(server_rpc, self.name, conf, phase)
+        --kong.log.debug("event: ", phase, ", plugin: ", self.name, " finished")
       end
     end
   end

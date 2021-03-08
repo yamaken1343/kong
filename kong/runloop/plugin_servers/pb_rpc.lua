@@ -5,7 +5,7 @@ require "lua_pack"
 local Rpc = {}
 Rpc.__index = Rpc
 
-local pp = require "pl.pretty".write
+--local pp = require "pl.pretty".write
 
 
 
@@ -43,6 +43,9 @@ do
     [".google.protobuf.Value"] = structpb_value,
     [".google.protobuf.ListValue"] = structpb_list,
     [".google.protobuf.Struct"] = structpb_struct,
+    [".kong_plugin_protocol.KV"] = function(d)
+      return {d.k, structpb_value(d.v)}
+    end,
   }
 end
 
@@ -112,23 +115,23 @@ end
 
 local function call_pdk(method_name, arg)
   local method = rpc_service[method_name]
-  kong.log.debug("method ", method_name, ": ", pp(method))
+  --kong.log.debug("method ", method_name, ": ", pp(method))
   if not method then
     return nil, ("method %q not found"):format(method_name)
   end
 
   arg = assert(pb.decode(method.input_type, arg))
-  kong.log.debug("args decoded: ", pp(arg))
+  --kong.log.debug("args decoded: ", pp(arg))
   local unwrap = pb_unwrap[method.input_type] or identity_function
   local wrap = pb_wrap[method.output_type] or identity_function
 
   local reply = wrap(method.method(table.unpack(unwrap(arg))))
   if reply == nil then
-    kong.log.debug("no reply")
+    --kong.log.debug("no reply")
     return ""
   end
 
-  kong.log.debug("reply wrapped: ", pp(reply))
+  --kong.log.debug("reply wrapped: ", pp(reply))
   reply = assert(pb.encode(method.output_type, reply))
 
   return reply
@@ -136,16 +139,19 @@ end
 
 
 local function read_frame(c)
+  --kong.log.debug("reading frame...")
   local msg, err = c:receive(4)   -- uint32
   if not msg then
     return nil, err
   end
   local _, msg_len = string.unpack(msg, "I")
+  --kong.log.debug("len: ", msg_len)
 
   msg, err = c:receive(msg_len)
   if not msg then
     return nil, err
   end
+  --kong.log.debug(("data: %q"):format(msg))
 
   return msg, nil
 end
@@ -161,7 +167,7 @@ function Rpc.new(socket_path, notifications)
     rpc_service = load_service()
   end
 
-  kong.log.debug("pb_rpc.new: ", socket_path)
+  --kong.log.debug("pb_rpc.new: ", socket_path)
   return setmetatable({
   socket_path = socket_path,
   msg_id = 0,
@@ -176,12 +182,12 @@ function Rpc:call(method, data, do_bridge_loop)
   local c, err = assert(ngx.socket.connect("unix:" .. self.socket_path))
 
   msg_id = msg_id + 1
-  kong.log.debug("will encode: ", pp{sequence = msg_id, [method] = data})
+  --kong.log.debug("will encode: ", pp{sequence = msg_id, [method] = data})
   local msg = assert(pb.encode(".kong_plugin_protocol.RpcCall", {
     sequence = msg_id,
     [method] = data,
   }))
-  kong.log.debug("encoded len: ", #msg)
+  --kong.log.debug("encoded len: ", #msg)
   assert (c:send(string.pack("I", #msg)))
   assert (c:send(msg))
 
@@ -195,7 +201,7 @@ function Rpc:call(method, data, do_bridge_loop)
       break
     end
 
-    kong.log.debug(("pdk method: %q (%d)"):format(method_name, #method_name))
+    --kong.log.debug(("pdk method: %q (%d)"):format(method_name, #method_name))
 
     local args
     args, err = read_frame(c)
@@ -222,7 +228,7 @@ function Rpc:call(method, data, do_bridge_loop)
   c:setkeepalive()
 
   msg = assert(pb.decode(".kong_plugin_protocol.RpcReturn", msg))
-  kong.log.debug("decoded: "..pp(msg))
+  --kong.log.debug("decoded: "..pp(msg))
   assert(msg.sequence == msg_id)
 
   return msg
