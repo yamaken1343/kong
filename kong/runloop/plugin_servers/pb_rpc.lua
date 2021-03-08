@@ -2,6 +2,8 @@ local protoc = require "protoc"
 local pb = require "pb"
 require "lua_pack"
 
+local t_unpack = table.unpack
+
 local Rpc = {}
 Rpc.__index = Rpc
 
@@ -41,10 +43,15 @@ do
 
   pb_unwrap = {
     [".google.protobuf.Value"] = structpb_value,
-    [".google.protobuf.ListValue"] = structpb_list,
+    [".google.protobuf.ListValue"] = function(v)
+      return t_unpack(structpb_list(v))
+    end,
     [".google.protobuf.Struct"] = structpb_struct,
     [".kong_plugin_protocol.KV"] = function(d)
-      return {d.k, structpb_value(d.v)}
+      return d.k, structpb_value(d.v)
+    end,
+    [".kong_plugin_protocol.ExitArgs"] = function (d)
+      return d.status, d.body, d.headers
     end,
   }
 end
@@ -108,8 +115,8 @@ end
 local rpc_service
 
 
-local function identity_function(...)
-  return ...
+local function identity_function(x)
+  return x
 end
 
 
@@ -125,7 +132,7 @@ local function call_pdk(method_name, arg)
   local unwrap = pb_unwrap[method.input_type] or identity_function
   local wrap = pb_wrap[method.output_type] or identity_function
 
-  local reply = wrap(method.method(table.unpack(unwrap(arg))))
+  local reply = wrap(method.method(unwrap(arg)))
   if reply == nil then
     --kong.log.debug("no reply")
     return ""
@@ -169,9 +176,9 @@ function Rpc.new(socket_path, notifications)
 
   --kong.log.debug("pb_rpc.new: ", socket_path)
   return setmetatable({
-  socket_path = socket_path,
-  msg_id = 0,
-  notifications_callbacks = notifications,
+    socket_path = socket_path,
+    msg_id = 0,
+    notifications_callbacks = notifications,
   }, Rpc)
 end
 
