@@ -96,10 +96,17 @@ qq{
 
             local res = pdk.node.get_memory_stats()
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
@@ -146,10 +153,17 @@ qq{
 
             local res = pdk.node.get_memory_stats("k")
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
@@ -194,13 +208,20 @@ qq{
 
             local res = pdk.node.get_memory_stats("b")
 
-            ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
 
-                assert(type(dict_info.allocated_slabs) == "number")
-                assert(type(dict_info.capacity) == "number")
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
+            ngx.say("lua_shared_dicts")
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
+
+                assert(type(dict.info.allocated_slabs) == "number")
+                assert(type(dict.info.capacity) == "number")
             end
 
             ngx.say("workers_lua_vms")
@@ -247,10 +268,17 @@ qq{
 
             local res = pdk.node.get_memory_stats("k", 4)
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
@@ -325,10 +353,17 @@ qq{
 
             local res = pdk.node.get_memory_stats()
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
@@ -378,10 +413,17 @@ qq{
 
             local res = pdk.node.get_memory_stats()
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
@@ -423,10 +465,17 @@ qq{
 
             local res = pdk.node.get_memory_stats()
 
+            local dicts = {}
+            for name, info in pairs(res.lua_shared_dicts) do
+                dicts[#dicts+1] = { name = name, info = info }
+            end
+
+            table.sort(dicts, function(a, b) return a.name < b.name end)
+
             ngx.say("lua_shared_dicts")
-            for dict_name, dict_info in pairs(res.lua_shared_dicts) do
-                ngx.say("  ", dict_name, ": ",
-                        dict_info.allocated_slabs, "/", dict_info.capacity)
+            for _, dict in ipairs(dicts) do
+                ngx.say("  ", dict.name, ": ",
+                        dict.info.allocated_slabs, "/", dict.info.capacity)
             end
 
             ngx.say("workers_lua_vms")
