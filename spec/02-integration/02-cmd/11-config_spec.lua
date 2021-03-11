@@ -5,11 +5,6 @@ local lyaml = require "lyaml"
 local lfs = require "lfs"
 
 
-local function trim(s)
-  return s:gsub("%s+", " "):gsub("^%s*", ""):gsub("%s*$", "")
-end
-
-
 local function sort_by_name(a, b)
   return a.name < b.name
 end
