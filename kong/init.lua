@@ -643,7 +643,10 @@ function Kong.ssl_certificate()
   local ctx = ngx.ctx
 
   kong_global.set_phase(kong, PHASES.certificate)
-  kong_resty_ctx.stash_ref(ctx)
+
+  --TODO: doesn't work
+  --kong_resty_ctx.stash_ref(ctx)
+
   log_init_worker_errors(ctx)
 
   -- this is the first phase to run on an HTTPS request
@@ -717,10 +720,10 @@ function Kong.rewrite()
   end
 
   kong_global.set_phase(kong, PHASES.rewrite)
+  kong_resty_ctx.stash_ref(ctx)
 
   local is_https = var.https == "on"
   if not is_https then
-    kong_resty_ctx.stash_ref(ctx)
     log_init_worker_errors(ctx)
   end
 
