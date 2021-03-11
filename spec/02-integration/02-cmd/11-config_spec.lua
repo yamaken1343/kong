@@ -220,16 +220,13 @@ describe("kong config", function()
       prefix = helpers.test_conf.prefix,
     })
     assert.falsy(ok)
+    assert.match(err)
 
-    assert.same(trim([[
-      Error: Failed parsing:
-      in 'services':
-      - in entry 1 of 'services':
-        in 'host': expected a string
-        in 'port': value should be between 0 and 65535
-        in 'routes': expected an array
-      Run with --v (verbose) or --vv (debug) for more details
-    ]]), trim(err))
+
+    assert.match("Error: Failed parsing:", err)
+    assert.match("in 'host': expected a string", err)
+    assert.match("in 'port': value should be between 0 and 65535", err)
+    assert.match("in 'routes': expected an array", err)
   end)
 
   it("#db config db_import is idempotent based on endpoint_key and cache_key", function()
