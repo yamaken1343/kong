@@ -215,8 +215,6 @@ describe("kong config", function()
       prefix = helpers.test_conf.prefix,
     })
     assert.falsy(ok)
-    assert.match(err)
-
 
     assert.match("Error: Failed parsing:", err)
     assert.match("in 'host': expected a string", err)
