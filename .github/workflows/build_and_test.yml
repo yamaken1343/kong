@@ -15,7 +15,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
@@ -45,7 +44,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
@@ -76,7 +74,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
@@ -103,7 +100,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
@@ -137,7 +133,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
@@ -157,6 +152,7 @@ jobs:
     needs: build
 
     strategy:
+      fail-fast: false
       matrix:
         split: [first, second, all]
         suite: [integration, plugins]
@@ -182,7 +178,6 @@ jobs:
 
     - uses: azure/docker-login@v1
       continue-on-error: true
-      fail-fast: false
       with:
         username: ${{ secrets.KONG_USERNAME }}
         password: ${{ secrets.KONG_PASSWORD }}
