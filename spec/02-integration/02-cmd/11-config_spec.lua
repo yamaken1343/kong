@@ -431,6 +431,7 @@ describe("kong config", function()
       "_format_version",
       "_transform",
       "acls",
+      "ca_certificates",
       "consumers",
       "keyauth_credentials",
       "parameters",
