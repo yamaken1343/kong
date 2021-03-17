@@ -380,6 +380,7 @@ describe("kong config", function()
     assert(db.consumers:truncate())
     assert(db.acls:truncate())
     assert(db.certificates:truncate())
+    assert(db.ca_certificates:truncate())
     assert(db.targets:truncate())
     assert(db.upstreams:truncate())
 
@@ -431,7 +432,6 @@ describe("kong config", function()
       "_format_version",
       "_transform",
       "acls",
-      "ca_certificates",
       "consumers",
       "keyauth_credentials",
       "parameters",
